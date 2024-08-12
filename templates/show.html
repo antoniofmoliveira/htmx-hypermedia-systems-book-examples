@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+<h1>{% block title %}Contacts.APP{% endblock %}</h1>
+<h2>A Demo Contacts Application</h2>
+{% endblock %}
+
+{% block content %}
+<h1>{{contact.first}} {{contact.last}}</h1>
+
+<div>
+  <div>Phone: {{contact.phone}}</div>
+  <div>Email: {{contact.email}}</div>
+</div>
+
+<p>
+  <a href="/contacts/{{contact.id}}/edit">Edit</a>
+  <a href="/contacts">Back</a>
+</p>
+{% endblock %}
