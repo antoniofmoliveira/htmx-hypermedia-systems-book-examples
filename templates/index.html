@@ -62,7 +62,7 @@
   </span>
 </div> -->
 <p>
-  <a href="/contacts/new">Add Contact</a> <span hx-get="/contacts/count" hx-trigger="load">
+  <a href="/contacts/new">Add Contact</a> <span hx-get="/contacts/count" hx-trigger="revealed">
     <img id="spinnerCount" width="20px" height="20px" class="htmx-indicator"
       src="{{ url_for('static', filename='img/spinning-circles.gif') }}"" />
   </span>
