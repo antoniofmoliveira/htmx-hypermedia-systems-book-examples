@@ -1,4 +1,5 @@
 from os import environ
+import time
 from flask import Flask, flash, redirect, render_template, request
 import sqlite3
 
@@ -207,6 +208,18 @@ class Contact:
         cur.execute('''SELECT COUNT(*) FROM contacts WHERE email=?''', (email,))
         return cur.fetchone()[0] > 0
 
+    @classmethod
+    def count(cls):
+        """
+        Returns the count of contacts in the database.
+
+        Returns:
+            int: The count of contacts in the database.
+        """
+        cur.execute('''SELECT COUNT(*) FROM contacts''')
+        time.sleep(1.5)  # Add a 1.5 second delay
+        return cur.fetchone()[0]
+
 
 @app.route("/")
 def index():
@@ -238,13 +251,14 @@ def contacts():
     """
     search = request.args.get("q")
     page = int(request.args.get("page", 1))
+    count = Contact.count()
     if search is not None:
         contacts_set = Contact.search(search)
         if request.headers.get('HX-Trigger') == 'search':
-            return render_template("rows.html", contacts=contacts_set)
+            return render_template("rows.html", contacts=contacts_set, page=page, count=count)
     else:
         contacts_set = Contact.all(page)
-    return render_template("index.html", contacts=contacts_set, page=page)
+    return render_template("index.html", contacts=contacts_set, page=page, count=count)
 
 
 @app.route("/contacts/new", methods=['GET'])
