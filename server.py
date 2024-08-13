@@ -61,8 +61,10 @@ class Contact:
         con.commit()
 
     @classmethod
-    def all(cls):
-        cur.execute('''SELECT * FROM contacts''')
+    def all(cls, page=1):
+        cur.execute('''SELECT * FROM contacts LIMIT 10 OFFSET ?''',
+                    ((page - 1) * 10,))
+        # cur.execute('''SELECT * FROM contacts''')
         return [cls(*row) for row in cur.fetchall()]
 
     @classmethod
@@ -74,6 +76,11 @@ class Contact:
                     ('%' + search_term + '%',) * 4)
         return [cls(*row) for row in cur.fetchall()]
 
+    @classmethod
+    def email_exists(cls, email):
+        cur.execute('''SELECT COUNT(*) FROM contacts WHERE email=?''', (email,))
+        return cur.fetchone()[0] > 0
+
 
 @app.route("/")
 def index():
@@ -83,11 +90,12 @@ def index():
 @app.route("/contacts")
 def contacts():
     search = request.args.get("q")
+    page = int(request.args.get("page", 1))
     if search is not None:
         contacts_set = Contact.search(search)
     else:
-        contacts_set = Contact.all()
-    return render_template("index.html", contacts=contacts_set)
+        contacts_set = Contact.all(page)
+    return render_template("index.html", contacts=contacts_set, page=page)
 
 
 @app.route("/contacts/new", methods=['GET'])
@@ -137,9 +145,29 @@ def contacts_edit_post(contact_id=0):
         return render_template("edit.html", contact=c)
 
 
-@app.route("/contacts/<contact_id>/delete", methods=["POST"])
+# @app.route("/contacts/<contact_id>/delete", methods=["POST"])
+# def contacts_delete(contact_id=0):
+#     contact = Contact.get(contact_id)
+#     contact.delete(contact.id)
+#     # flash("Deleted Contact!")
+#     return redirect("/contacts")
+
+@app.route("/contacts/<contact_id>", methods=["DELETE"])
 def contacts_delete(contact_id=0):
-    contact = Contact.get(contact_id)
-    contact.delete(contact.id)
+    contact = Contact.find(contact_id)
+    contact.delete()
     # flash("Deleted Contact!")
-    return redirect("/contacts")
+    return redirect("/contacts", 303)
+
+
+@app.route("/contacts/<contact_id>/email", methods=["GET"])
+def contacts_email_get(contact_id=0):
+    # if id > 0:
+    #     c = Contact.find(contact_id)
+    # else:
+    c = Contact(0, "", "", "", "")
+    c.email = request.args.get('email')
+    if Contact.email_exists(c.email):
+        errors = c.errors
+        errors['email'] = 'Email already exists.'
+    return errors.get('email') or ""

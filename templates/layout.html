@@ -1,21 +1,21 @@
 <!doctype html>
 <title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
 <script src="{{ url_for('static', filename='js/htmx.js') }}"></script>
 
 <body hx-boost="true">
-
-    <nav>
-        <h1>Flaskr</h1>
-    </nav>
-    <section class="content">
-        <header>
-            {% block header %}{% endblock %}
-        </header>
-        {% for message in get_flashed_messages() %}
-        <div class="flash">{{ message }}</div>
-        {% endfor %}
-        {% block content %}{% endblock %}
-    </section>
-
+    <main class="container">
+        <nav>
+            <h1>Flaskr</h1>
+        </nav>
+        <section class="content">
+            <header>
+                {% block header %}{% endblock %}
+            </header>
+            {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+        </section>
+    </main>
 </body>
