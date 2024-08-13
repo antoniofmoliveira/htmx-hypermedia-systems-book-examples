@@ -1,12 +1,16 @@
+from os import environ
 from flask import Flask, flash, redirect, render_template, request
 import sqlite3
 
 app = Flask(__name__)
 
-con = sqlite3.connect('contacts.db', check_same_thread=False)
+app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config['SESSION_TYPE'] = 'memcached'
 
+
+con = sqlite3.connect('contacts.db', check_same_thread=False)
 cur = con.cursor()
-# cur.execute('''CREATE TABLE IF NOT EXISTS contacts(id integer primary key autoincrement, first_name text, last_name text, phone text, email text)''')
+cur.execute('''CREATE TABLE IF NOT EXISTS contacts(id integer primary key autoincrement, first_name text, last_name text, phone text, email text)''')
 
 
 class Contact:
@@ -105,7 +109,7 @@ def contacts_new():
         request.form['phone'],
         request.form['email'])
     if Contact.create(c):
-        # flash("Created New Contact!")
+        flash("Created New Contact!")
         return redirect("/contacts")
     else:
         return render_template("new.html", contact=c)
@@ -131,7 +135,7 @@ def contacts_edit_post(contact_id=0):
     c.phone = request.form['phone']
     c.email = request.form['email']
     if Contact.update(c):
-        # flash("Updated Contact!")
+        flash("Updated Contact!")
         return redirect("/contacts/" + str(contact_id))
     else:
         return render_template("edit.html", contact=c)
@@ -141,5 +145,5 @@ def contacts_edit_post(contact_id=0):
 def contacts_delete(contact_id=0):
     contact = Contact.get(contact_id)
     contact.delete(contact.id)
-    # flash("Deleted Contact!")
+    flash("Deleted Contact!")
     return redirect("/contacts")
