@@ -1,12 +1,16 @@
+from os import environ
 from flask import Flask, flash, redirect, render_template, request
 import sqlite3
 
 app = Flask(__name__)
 
-con = sqlite3.connect('contacts.db', check_same_thread=False)
+app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config['SESSION_TYPE'] = 'memcached'
 
+
+con = sqlite3.connect('contacts.db', check_same_thread=False)
 cur = con.cursor()
-# cur.execute('''CREATE TABLE IF NOT EXISTS contacts(id integer primary key autoincrement, first_name text, last_name text, phone text, email text)''')
+cur.execute('''CREATE TABLE IF NOT EXISTS contacts(id integer primary key autoincrement, first_name text, last_name text, phone text, email text)''')
 
 
 class Contact:
@@ -64,7 +68,6 @@ class Contact:
     def all(cls, page=1):
         cur.execute('''SELECT * FROM contacts LIMIT 10 OFFSET ?''',
                     ((page - 1) * 10,))
-        # cur.execute('''SELECT * FROM contacts''')
         return [cls(*row) for row in cur.fetchall()]
 
     @classmethod
@@ -113,7 +116,7 @@ def contacts_new():
         request.form['phone'],
         request.form['email'])
     if Contact.create(c):
-        # flash("Created New Contact!")
+        flash("Created New Contact!")
         return redirect("/contacts")
     else:
         return render_template("new.html", contact=c)
@@ -139,32 +142,22 @@ def contacts_edit_post(contact_id=0):
     c.phone = request.form['phone']
     c.email = request.form['email']
     if Contact.update(c):
-        # flash("Updated Contact!")
+        flash("Updated Contact!")
         return redirect("/contacts/" + str(contact_id))
     else:
         return render_template("edit.html", contact=c)
 
 
-# @app.route("/contacts/<contact_id>/delete", methods=["POST"])
-# def contacts_delete(contact_id=0):
-#     contact = Contact.get(contact_id)
-#     contact.delete(contact.id)
-#     # flash("Deleted Contact!")
-#     return redirect("/contacts")
-
 @app.route("/contacts/<contact_id>", methods=["DELETE"])
 def contacts_delete(contact_id=0):
     contact = Contact.find(contact_id)
     contact.delete()
-    # flash("Deleted Contact!")
+    flash("Deleted Contact!")
     return redirect("/contacts", 303)
 
 
 @app.route("/contacts/<contact_id>/email", methods=["GET"])
 def contacts_email_get(contact_id=0):
-    # if id > 0:
-    #     c = Contact.find(contact_id)
-    # else:
     c = Contact(0, "", "", "", "")
     c.email = request.args.get('email')
     if Contact.email_exists(c.email):
