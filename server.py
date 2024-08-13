@@ -345,8 +345,8 @@ def contacts_delete(contact_id=0):
     Returns:
         redirect: A redirect response to the "/contacts" URL with a status code of 303.
     """
-    contact = Contact.find(contact_id)
-    contact.delete()
+    contact = Contact.get(contact_id)
+    Contact.delete(contact.id)
     flash("Deleted Contact!")
     return redirect("/contacts", 303)
 
