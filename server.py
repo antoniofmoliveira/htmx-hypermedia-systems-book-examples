@@ -1,6 +1,6 @@
 from os import environ
 import time
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, flash, redirect, render_template, request, send_file
 import sqlite3
 
 app = Flask(__name__)
@@ -13,9 +13,128 @@ con = sqlite3.connect('contacts.db', check_same_thread=False)
 cur = con.cursor()
 cur.execute('''CREATE TABLE IF NOT EXISTS contacts(id integer primary key autoincrement, first_name text, last_name text, phone text, email text)''')
 
+pos = 0
+
+"""" 
+Fake Archiver Class
+
+Here is a succinct explanation of the class definition and its methods:
+
+**Class Archiver:**
+
+* This class appears to manage the state of an archiving process, tracking its progress and status.
+
+**Class Methods:**
+
+* `__init__(self, user_id)`: Initializes a new Archiver instance with a given user ID and sets 
+its internal progress to 0.0.
+* `status(self)`: Returns the current status of the archiving process as a string ('Waiting', 
+'Running', or 'Complete') based on its internal progress.
+* `progress(self)`: Returns the current progress of the archiving process as a float value 
+between 0.0 and 1.0.
+* `run(cls)`: Increments the internal progress of the archiving process and resets it to 0.0 
+if it exceeds 10.0.
+* `reset(cls)`: Resets the internal progress of the archiving process to 0.0.
+* `archive_file(self)`: Returns a fixed string 'archive.zip', likely representing the name of 
+the archived file.
+* `get(cls)`: Returns an instance of the Archiver class, creating a new one if none exists, 
+and runs the archiving process if an instance already exists.
+
+Note that the `user_id` parameter in the `__init__` method is not used anywhere in the class, 
+and the `archive_file` method always returns the same fixed string.
 """
 
 
+class Archiver:
+
+    instance = None
+
+    def __init__(self, user_id):
+        """
+        Initializes a new Archiver instance with a given user ID and sets its internal progress to 0.0.
+
+        Args:
+            user_id: The ID of the user associated with this archiver instance.
+
+        Returns:
+            None
+        """
+        self.internal_progress = 0.0
+        self.user_id = user_id
+
+    def status(self):
+        """
+        Returns the current status of the archiving process as a string.
+
+        The status can be one of three values:
+        - 'Waiting' if the internal progress is 0.0.
+        - 'Complete' if the internal progress is 10.0.
+        - 'Running' for any other value of internal progress.
+
+        Returns:
+            str: The current status of the archiving process.
+        """
+        if self.internal_progress == 0.0:
+            return 'Waiting'
+        elif self.internal_progress == 10.:
+            return 'Complete'
+        else:
+            return 'Running'
+
+    def progress(self):
+        """
+        Returns the current progress of the archiving process as a floating point number between 0.0 and 1.0.
+
+        Returns:
+            float: The current progress of the archiving process.
+        """
+        return self.internal_progress/10.0
+
+    @classmethod
+    def run(cls):
+        global pos
+        pos += 1
+        cls.instance.internal_progress = pos
+        if cls.instance.internal_progress > 10.0:
+            cls.instance.reset()
+            pos = 0
+
+    @classmethod
+    def reset(cls):
+        """
+        Resets the internal progress of the archiving process to 0.0.
+
+        Args:
+            None
+
+        Returns:
+            bool: True if the reset was successful.
+        """
+        cls.instance.internal_progress = 0.0
+        return True
+
+    def archive_file(self):
+        return 'archive.zip'
+
+    @classmethod
+    def get(cls):
+        """
+        Retrieves the Archiver instance associated with the class.
+
+        If an instance does not exist, it creates a new Archiver instance with a default user ID of 1.
+        Otherwise, it runs the Archiver instance and updates its internal progress.
+
+        Returns:
+            Archiver: The Archiver instance associated with the class.
+        """
+        if cls.instance == None:
+            cls.instance = Archiver(user_id=1)
+        else:
+            Archiver.run()
+        return cls.instance
+
+
+"""
 Here is a succinct explanation of the `Contact` class definition:
 
 **Class Methods:**
@@ -257,7 +376,7 @@ def contacts():
             return render_template("rows.html", contacts=contacts_set, page=page)
     else:
         contacts_set = Contact.all(page)
-    return render_template("index.html", contacts=contacts_set, page=page)
+    return render_template("index.html", contacts=contacts_set, page=page, archiver=Archiver.get())
 
 
 @app.route("/contacts", methods=["DELETE"])
@@ -291,6 +410,56 @@ def contacts_delete_all():
     flash("Deleted Contacts!")
     contacts_set = Contact.all()
     return render_template("index.html", contacts=contacts_set)
+
+
+@app.route("/contacts/archive", methods=["GET"])
+def archive_status():
+    """
+    Retrieves the status of the archiving process.
+
+    Returns:
+        render_template: A rendered HTML template ("archive_ui.html") with the archiver status.
+    """
+    archiver = Archiver.get()
+    return render_template("archive_ui.html", archiver=archiver)
+
+
+@app.route("/contacts/archive/file", methods=["GET"])
+def archive_content():
+    """
+    Retrieves the archived contact data as a downloadable JSON file.
+
+    Returns:
+        send_file: A JSON file containing the archived contact data.
+    """
+    manager = Archiver.get()
+    return send_file(
+        manager.archive_file(), "archive.json", as_attachment=True)
+
+
+@app.route("/contacts/archive", methods=["DELETE"])
+def reset_archive():
+    """
+    Resets the archiving process by retrieving the current archiver instance and calling its reset method.
+
+    Returns:
+        render_template: A rendered HTML template ("archive_ui.html") with the reset archiver status.
+    """
+    archiver = Archiver.get()
+    Archiver.reset()
+    return render_template("archive_ui.html", archiver=archiver)
+
+
+@app.route("/contacts/archive", methods=["POST"])
+def start_archive():
+    """
+    Starts the archiving process by retrieving the current archiver instance and rendering the archive UI template.
+
+    Returns:
+        render_template: A rendered HTML template ("archive_ui.html") with the archiver status.
+    """
+    archiver = Archiver.get()
+    return render_template("archive_ui.html", archiver=archiver)
 
 
 @app.route("/contacts/count")
