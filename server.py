@@ -260,8 +260,49 @@ def contacts():
     return render_template("index.html", contacts=contacts_set, page=page)
 
 
+@app.route("/contacts", methods=["DELETE"])
+def contacts_delete_all():
+    """
+    Deletes multiple contacts from the database.
+
+    Retrieves a list of contact IDs from the request form, finds each contact by ID, 
+    and deletes them from the database. After deletion, it retrieves a list of all 
+    contacts and renders the "index.html" template with the updated list.
+
+    Parameters:
+        selected_contact_ids (list): A list of contact IDs to be deleted.
+
+    Returns:
+        render_template: A rendered HTML template ("index.html") with a list of contacts.
+    """
+    # this dont worked
+    # contact_ids = [
+    #     int(id) for id in request.form.getlist("selected_contact_ids")
+    # ]
+
+    # this worked
+    # added hx-include to button
+    contact_ids = [
+        int(id) for id in request.args.getlist("selected_contact_ids")
+    ]
+    for contact_id in contact_ids:
+        contact = Contact.get(contact_id)
+        Contact.delete(contact_id)
+    flash("Deleted Contacts!")
+    contacts_set = Contact.all()
+    return render_template("index.html", contacts=contacts_set)
+
+
 @app.route("/contacts/count")
 def contacts_count():
+    """
+    Defines a route for the "/contacts/count" URL of the application.
+
+    Retrieves the total count of contacts in the database and returns it as a string.
+
+    Returns:
+        str: A string containing the total count of contacts in the format "(X total Contacts)".
+    """
     count = Contact.count()
     return "(" + str(count) + " total Contacts)"
 

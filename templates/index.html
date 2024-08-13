@@ -14,53 +14,36 @@
     src="{{ url_for('static', filename='img/spinning-circles.gif') }}" alt=" Request In Flight..." />
   <input type="submit" value="Search" />
 </form>
-<table>
-  <thead>
-    <tr>
-      <th>First
-      <th>Last
-      <th>Phone
-      <th>Email
+<form>
+  <table>
+    <thead>
+      <tr>
         <th />
-    </tr>
-  </thead>
-  <tbody>
-    {% include 'rows.html' %}
-    <!-- infinite scroll -->
-    {% if contacts|length == 10 %}
-    <tr>
-      <td colspan="5" style="text-align: center">
-        <span hx-target="closest tr" hx-trigger="revealed" hx-swap="outerHTML"
-          hx-get="/contacts?page={{ page + 1 }}">Loading More...</span>
-      </td>
-    </tr>
-    {% endif %}
-
-    <!-- load more -->
-    <!-- {% if contacts|length == 10 %}
-    <tr>
-      <td colspan="5" style="text-align: center">
-        <button hx-target="closest tr" hx-swap="outerHTML" hx-select="tbody > tr"
-          hx-get="/contacts?page={{ page + 1 }}">
-          Load More
-        </button>
-      </td>
-    </tr>
-    {% endif %} -->
-
-  </tbody>
-</table>
-<!-- pagination -->
-<!-- <div>
-  <span style="float: right">
-    {% if page > 1 %}
-      <a href="/contacts?page={{ page - 1 }}">Previous</a>
-    {% endif %}
-    {% if contacts|length == 10 %}
-      <a href="/contacts?page={{ page + 1 }}">Next</a>
-    {% endif %}
-  </span>
-</div> -->
+        <th>First</th>
+        <th>Last</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th />
+      </tr>
+    </thead>
+    <tbody>
+      {% include 'rows.html' %}
+      <!-- infinite scroll -->
+      {% if contacts|length == 10 %}
+      <tr>
+        <td colspan="5" style="text-align: center">
+          <span hx-target="closest tr" hx-trigger="revealed" hx-swap="outerHTML"
+            hx-get="/contacts?page={{ page + 1 }}">Loading More...</span>
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <button hx-delete="/contacts" hx-include="[name='selected_contact_ids']"
+    hx-confirm="Are you sure you want to delete these contacts?" hx-target="body">
+    Delete Selected Contacts
+  </button>
+</form>
 <p>
   <a href="/contacts/new">Add Contact</a> <span hx-get="/contacts/count" hx-trigger="revealed">
     <img id="spinnerCount" width="20px" height="20px" class="htmx-indicator"
