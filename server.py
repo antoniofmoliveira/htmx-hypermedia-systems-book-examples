@@ -57,6 +57,12 @@ class Contact:
         self.phone = phone
         self.email = email
 
+    def __str__(self):
+        """
+        Returns a string representation of the contact object.
+        """
+        return f"{self.id}: {self.first} {self.last}, | {self.email} | {self.phone}"
+
     @staticmethod
     def from_dict(data):
         """
@@ -234,6 +240,8 @@ def contacts():
     page = int(request.args.get("page", 1))
     if search is not None:
         contacts_set = Contact.search(search)
+        if request.headers.get('HX-Trigger') == 'search':
+            return render_template("rows.html", contacts=contacts_set)
     else:
         contacts_set = Contact.all(page)
     return render_template("index.html", contacts=contacts_set, page=page)

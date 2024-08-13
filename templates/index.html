@@ -9,7 +9,7 @@
 <form action="/contacts" method="get" class="tool-bar">
   <label for="search">Search Term</label>
   <input id="search" type="search" name="q" value="{{ request.args.get('q') or '' }}" hx-get="/contacts"
-    hx-trigger="search, keyup delay:200ms changed" hx-target="tbody" hx-select="tbody tr" />
+    hx-trigger="search, keyup delay:200ms changed" hx-target="tbody" />
   <input type="submit" value="Search" />
 </form>
 <table>
@@ -23,23 +23,12 @@
     </tr>
   </thead>
   <tbody>
-    {% for contact in contacts %}
-    <tr>
-      <td>{{ contact.first }}</td>
-      <td>{{ contact.last }}</td>
-      <td>{{ contact.phone }}</td>
-      <td>{{ contact.email }}</td>
-      <td><a href="/contacts/{{ contact.id }}/edit">Edit</a>
-        <a href="/contacts/{{ contact.id }}">View</a>
-      </td>
-    </tr>
-    {% endfor %}
-
+    {% include 'rows.html' %}
     <!-- infinite scroll -->
     {% if contacts|length == 10 %}
     <tr>
       <td colspan="5" style="text-align: center">
-        <span hx-target="closest tr" hx-trigger="revealed" hx-swap="outerHTML" hx-select="tbody > tr"
+        <span hx-target="closest tr" hx-trigger="revealed" hx-swap="outerHTML"
           hx-get="/contacts?page={{ page + 1 }}">Loading More...</span>
       </td>
     </tr>
