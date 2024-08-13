@@ -94,10 +94,11 @@ class Archiver:
     def run(cls):
         global pos
         pos += 1
-        cls.instance.internal_progress = pos
-        if cls.instance.internal_progress > 10.0:
-            cls.instance.reset()
-            pos = 0
+        if cls.instance:
+            cls.instance.internal_progress = pos
+            if cls.instance.internal_progress > 10.0:
+                cls.instance.reset()
+                pos = 0
 
     @classmethod
     def reset(cls):
@@ -110,7 +111,8 @@ class Archiver:
         Returns:
             bool: True if the reset was successful.
         """
-        cls.instance.internal_progress = 0.0
+        if cls.instance:
+            cls.instance.internal_progress = 0.0
         return True
 
     def archive_file(self):
@@ -603,7 +605,7 @@ def contacts_email_get(contact_id=0):
         str: An error message if the email exists, otherwise an empty string.
     """
     c = Contact(0, "", "", "", "")
-    c.email = request.args.get('email')
+    c.email = request.args.get('email') or ""
     if Contact.email_exists(c.email):
         errors = c.errors
         errors['email'] = 'Email already exists.'

@@ -1,4 +1,4 @@
-# A working implementation of examples from book [Hypermedia Systems]([https://hypermedia.systems/book/contents/)
+# A working implementation of examples from book [Hypermedia Systems](https://hypermedia.systems/book/contents/)
 
 the `.env` file
 
