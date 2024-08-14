@@ -13,3 +13,5 @@ SECRET_KEY='123456'
 * branch 'chapter06-more-htmx-patterns'
 
 * branch 'chapter07-a-dynamic-archive-ui'
+
+* branch 'chapter09-client-side-scripting' (then part of alpinejs dont work :( )
