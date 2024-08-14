@@ -15,7 +15,7 @@
     src="{{ url_for('static', filename='img/spinning-circles.gif') }}" alt=" Request In Flight..." />
   <input type="submit" value="Search" />
 </form>
-<form>
+<form id="contact-form" x-data="{ selected: [] }">
   <table>
     <thead>
       <tr>
@@ -40,10 +40,30 @@
       {% endif %}
     </tbody>
   </table>
-  <button hx-delete="/contacts" hx-include="[name='selected_contact_ids']"
+  <div>
+    <slot x-text="selected.length"></slot>
+  </div>
+  <template x-if="selected.length > 0">
+    <div class="box info tool-bar">
+      <slot x-text="selected.length"></slot>
+      contacts selected
+
+      <button type="button" class="bad bg color border" @click="
+        confirm(`Delete ${selected.length} contacts?`) && 
+        htmx.ajax('DELETE', '/contacts',
+          { source: $root, target: document.body }) 
+  ">
+        Delete
+      </button>
+      <hr aria-orientation="vertical">
+      <button type="button" @click="selected = []">Cancel</button>
+    </div>
+  </template>
+
+  <!-- <button hx-delete="/contacts" hx-include="[name='selected_contact_ids']"
     hx-confirm="Are you sure you want to delete these contacts?" hx-target="body">
     Delete Selected Contacts
-  </button>
+  </button> -->
 </form>
 <p>
   <a href="/contacts/new">Add Contact</a> <span hx-get="/contacts/count" hx-trigger="revealed">
