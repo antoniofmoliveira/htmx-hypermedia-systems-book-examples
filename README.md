@@ -1,4 +1,4 @@
-# A working implementation of examples from book [Hypermedia Systems](https://hypermedia.systems/book/contents/)
+# A working implementation of HTMX examples from book [Hypermedia Systems](https://hypermedia.systems/book/contents/)
 
 the `.env` file
 
@@ -14,4 +14,4 @@ SECRET_KEY='123456'
 
 * branch 'chapter07-a-dynamic-archive-ui'
 
-* branch 'chapter09-client-side-scripting' (then part of alpinejs dont work :( )
+* branch 'chapter09-client-side-scripting' (the part of alpinejs dont work :( )
