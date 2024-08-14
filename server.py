@@ -1,6 +1,6 @@
 from os import environ
 import time
-from flask import Flask, flash, redirect, render_template, request, send_file
+from flask import Flask, flash, jsonify, redirect, render_template, request, send_file
 import sqlite3
 
 app = Flask(__name__)
@@ -610,3 +610,104 @@ def contacts_email_get(contact_id=0):
         errors = c.errors
         errors['email'] = 'Email already exists.'
     return errors.get('email') or ""
+
+
+@app.route("/api/v1/contacts", methods=["GET"])
+def json_contacts():
+    """
+    Defines a route for the "/api/v1/contacts" URL of the application, handling GET requests.
+
+    Retrieves a list of all contacts from the database and returns them as a JSON response.
+
+    Returns:
+        dict: A dictionary containing a list of contact dictionaries.
+    """
+    contacts_set = Contact.all()
+    contacts_dicts = [c.__dict__ for c in contacts_set]
+    return {"contacts": contacts_dicts}
+
+
+@app.route("/api/v1/contacts", methods=["POST"])
+def json_contacts_new():
+    """
+    Defines a route for the "/api/v1/contacts" URL of the application, handling POST requests.
+
+    Creates a new contact based on the provided form data and attempts to insert it into the database.
+
+    Parameters:
+        first_name (str): The first name of the contact.
+        last_name (str): The last name of the contact.
+        phone (str): The phone number of the contact.
+        email (str): The email address of the contact.
+
+    Returns:
+        dict: A dictionary containing the newly created contact's data if the creation is successful.
+        tuple: A tuple containing a dictionary with error messages and a 400 status code if the creation fails.
+    """
+    c = Contact(None,
+                request.form.get('first_name'),
+                request.form.get('last_name'),
+                request.form.get('phone'),
+                request.form.get('email'))
+    if Contact.create(c):
+        return c.__dict__
+    else:
+        return {"errors": c.errors}, 400
+
+
+@app.route("/api/v1/contacts/<contact_id>", methods=["GET"])
+def json_contacts_view(contact_id=0):
+    """
+    Retrieves a contact from the database and returns it as a JSON response.
+
+    Parameters:
+        contact_id (int): The ID of the contact to be retrieved. Defaults to 0.
+
+    Returns:
+        dict: A dictionary containing the contact's data.
+    """
+    contact = Contact.get(contact_id)
+    return contact.__dict__
+
+
+@app.route("/api/v1/contacts/<contact_id>", methods=["PUT"])
+def json_contacts_edit(contact_id):
+    """
+    Defines a route for the "/api/v1/contacts/<contact_id>" URL of the application, handling PUT requests.
+
+    Updates an existing contact in the database based on the provided form data.
+
+    Parameters:
+        contact_id (int): The ID of the contact to be updated.
+
+    Returns:
+        dict: A dictionary containing the updated contact's data if the update is successful.
+        tuple: A tuple containing a dictionary with error messages and a 400 status code if the update fails.
+    """
+    c = Contact.get(contact_id)
+    c.first = request.form['first_name']
+    c.last = request.form['last_name']
+    c.phone = request.form['phone']
+    c.email = request.form['email']
+    if Contact.update(c):
+        return c.__dict__
+    else:
+        return {"errors": c.errors}, 400
+
+
+@app.route("/api/v1/contacts/<contact_id>", methods=["DELETE"])
+def json_contacts_delete(contact_id=0):
+    """
+    Defines a route for the "/api/v1/contacts/<contact_id>" URL of the application, handling DELETE requests.
+
+    Deletes a contact from the database by its ID.
+
+    Parameters:
+        contact_id (int): The ID of the contact to be deleted. Defaults to 0.
+
+    Returns:
+        dict: A dictionary containing a success message.
+    """
+    contact = Contact.get(contact_id)
+    Contact.delete(contact.id)
+    return jsonify({"success": True})
