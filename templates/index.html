@@ -56,12 +56,15 @@
   ">
         Delete
       </button> -->
-      <button type="button" class="bad bg color border" @click="Swal.fire({title: 'Delete these contacts?', showCancelButton: true, confirmButtonText: 'Delete'
+      <!-- <button type="button" class="bad bg color border" @click="Swal.fire({title: 'Delete these contacts?', showCancelButton: true, confirmButtonText: 'Delete'
       }).then((result) => { 
         if (result.isConfirmed) htmx.ajax('DELETE', '/contacts', { source: $root, target: document.body })
-  });">Delete</button>
-      <hr aria-orientation="vertical">
-      <button type="button" @click="selected = []">Cancel</button>
+  });">Delete</button> -->
+      <button type="button" class="bad bg color border" hx-delete="/contacts" hx-target="body" hx-trigger="confirmed"
+        @click="sweetConfirm($el, {title: 'Delete these contacts?', showCancelButton: true, confirmButtonText: 'Delete'
+  })">
+        <hr aria-orientation="vertical">
+        <button type="button" @click="selected = []">Cancel</button>
     </div>
   </template>
 
